@@ -2,6 +2,7 @@ import { checkSubscriptions } from "./subscriptions";
 import { verifyTransactions, cleanupOldTransactions } from "./transactions";
 import { updateYieldTimestamp } from "./yield";
 import { getPortfolioSummary, getDetailedPortfolioData } from "./portfolio";
+import { notifyNewPayingUser } from "./telegram";
 
 export {
   checkSubscriptions,
@@ -10,4 +11,5 @@ export {
   updateYieldTimestamp,
   getPortfolioSummary,
   getDetailedPortfolioData,
+  notifyNewPayingUser
 };
