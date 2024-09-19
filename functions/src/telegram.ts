@@ -4,6 +4,7 @@ import axios from "axios";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
 export const notifyNewPayingUser = functions.firestore.document("users/{userId}").onWrite(async (change, context) => {
   const newValue = change.after.data();
@@ -86,3 +87,50 @@ export const notifyNewYieldOpportunities = functions.firestore
 
     await Promise.all(notifications);
   });
+
+export const telegramWebhook = functions.https.onRequest(async (request, response) => {
+  if (request.method !== "POST") {
+    response.status(400).send("Please send a POST request");
+    return;
+  }
+
+  const { message } = request.body;
+  if (!message || !message.chat || !message.text) {
+    response.status(400).send("Invalid message format");
+    return;
+  }
+
+  const chatId = message.chat.id;
+  const text = message.text.trim().toLowerCase();
+
+  if (text === "/start") {
+    const replyMessage = `Welcome! Your Chat ID is: ${chatId}\n\nPlease use this Chat ID in the East India Onchain Company app to enable Telegram notifications for new yield opportunities.`;
+    await sendTelegramMessage(chatId.toString(), replyMessage);
+  }
+
+  response.status(200).send("OK");
+});
+
+async function sendTelegramMessage(chatId: string, text: string) {
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  await axios.post(url, {
+    chat_id: chatId,
+    text: text,
+  });
+}
+
+export const setTelegramWebhook = functions.https.onRequest(async (request, response) => {
+  try {
+    console.log(`Setting webhook to: ${WEBHOOK_URL}`);
+
+    const result = await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
+      url: WEBHOOK_URL,
+    });
+
+    console.log("Webhook setup response:", result.data);
+    response.status(200).json(result.data);
+  } catch (error) {
+    console.error("Error setting webhook:", error);
+    response.status(500).send("Error setting webhook");
+  }
+});
