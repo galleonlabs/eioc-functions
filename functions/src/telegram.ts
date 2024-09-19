@@ -50,3 +50,39 @@ export const notifyNewPayingUser = functions.firestore.document("users/{userId}"
     return null;
   }
 });
+
+export const notifyNewYieldOpportunities = functions.firestore
+  .document("yieldOpportunities/{opportunityId}")
+  .onCreate(async (snapshot, context) => {
+    const newOpportunity = snapshot.data();
+
+    // Fetch all paid users with Telegram notifications enabled
+    const usersSnapshot = await admin
+      .firestore()
+      .collection("users")
+      .where("isPaidUser", "==", true)
+      .where("telegramNotificationsEnabled", "==", true)
+      .get();
+
+    const notifications = usersSnapshot.docs.map(async (userDoc) => {
+      const user = userDoc.data();
+      if (user.telegramChatId) {
+        const message =
+          `New Yield Opportunity!\n\n` +
+          `Name: ${newOpportunity.name}\n` +
+          `APY: ${newOpportunity.estimatedApy}%\n` +
+          `Network: ${newOpportunity.network}\n` +
+          `Risk: ${newOpportunity.relativeRisk}\n` +
+          `Category: ${newOpportunity.category}\n\n` +
+          `https://eastindiaonchaincompany.com/yield for more details.`;
+
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        await axios.post(url, {
+          chat_id: user.telegramChatId,
+          text: message,
+        });
+      }
+    });
+
+    await Promise.all(notifications);
+  });
