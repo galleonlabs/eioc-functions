@@ -2,7 +2,7 @@ import { checkSubscriptions } from "./subscriptions";
 import { verifyTransactions, cleanupOldTransactions } from "./transactions";
 import { updateYieldTimestamp } from "./yield";
 import { getPortfolioSummary, getDetailedPortfolioData } from "./portfolio";
-import { notifyNewPayingUser, notifyNewYieldOpportunities, telegramWebhook, setTelegramWebhook } from "./telegram";
+import { notifyUserChanges, notifyNewYieldOpportunities, telegramWebhook, setTelegramWebhook } from "./telegram";
 
 export {
   checkSubscriptions,
@@ -11,7 +11,7 @@ export {
   updateYieldTimestamp,
   getPortfolioSummary,
   getDetailedPortfolioData,
-  notifyNewPayingUser,
+  notifyUserChanges,
   notifyNewYieldOpportunities,
   telegramWebhook,
   setTelegramWebhook,
